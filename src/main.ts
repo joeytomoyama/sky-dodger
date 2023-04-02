@@ -47,6 +47,7 @@ function init(): void {
   ship = new Ship(20)
 
   scene.add( ship.model )
+  scene.add( ship.arrowHelper )
 
   renderer.render(scene, camera)
 
