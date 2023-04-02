@@ -21,3 +21,11 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+.fpsCounter {
+  top: 0;
+  right: 0;
+  margin: 5px;
+  color: white;
+  position: absolute;
+}

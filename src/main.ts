@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { PerspectiveCamera, Vector3, WebGLRenderer } from 'three';
 
+import Ship from './Ship'
+
 console.log('test')
 
 let SCREEN_WIDTH = window.innerWidth;
@@ -15,9 +17,11 @@ let scene: THREE.Scene
 let renderer: WebGLRenderer
 let controls: OrbitControls
 
-let ship: any
+let ship: Ship
 
-let goingForwards: boolean
+let isAccelerating: boolean
+
+const fpsCounterDiv = document.querySelector('.fpsCounter')
 
 function init(): void {
   container = document.getElementById('container')
@@ -27,7 +31,8 @@ function init(): void {
   //
 
   camera = new THREE.PerspectiveCamera( 90, aspect, 0.1, 10000 )
-  // camera.position.setY(5)
+  camera.position.setY(3)
+  camera.position.setZ(5)
 
   renderer = new THREE.WebGLRenderer({
     canvas: container as HTMLCanvasElement
@@ -39,46 +44,34 @@ function init(): void {
   const gridHelper = new THREE.GridHelper(200, 50)
   scene.add(gridHelper)
 
-  ship = makeShip()
+  ship = new Ship(20)
 
-  scene.add( ship )
+  scene.add( ship.model )
 
   renderer.render(scene, camera)
-
-  // setInterval(() => {
-  //   console.log(goingForwards)
-  //   if (goingForwards) {
-  //     ship.position.z -= 0.1
-  //     camera.position.x = ship.position.x
-  //     camera.position.y = ship.position.y + 5
-  //     camera.position.z = ship.position.z + 5
-  //     camera.lookAt(ship.position)
-  //   }
-  // }, 10)
-  // camera.position.x = ship.position.x
-  // camera.position.y = ship.position.y + 5
-  // camera.position.z = ship.position.z + 5
-  // camera.lookAt(ship.position)
 
   animate()
 }
 
-function makeShip(): THREE.Group {
-  const group = new THREE.Group()
-  const shipGeo = new THREE.TetrahedronGeometry(5)
-  shipGeo.rotateY(Math.PI / 4)
-  const ship = new THREE.Mesh(shipGeo, new THREE.MeshBasicMaterial( {color: 0xFF6347, wireframe: true } ))
-  ship.rotateX(Math.PI / 5)
-  group.add(ship)
-  group.scale.set(0.7, 0.3, 1)
-  // ship.lookAt(5, 5, 5)
-  // ship.rotateX(Math.PI / 10)
-  // ship.add(camera)
-  // camera.position.z = 10
-  return group
-}
+// function makeShip(): THREE.Mesh {
+//   const group = new THREE.Group()
+//   const shipGeo = new THREE.TetrahedronGeometry(5)
+//   shipGeo.rotateY(Math.PI / 4)
+//   const ship = new THREE.Mesh(shipGeo, new THREE.MeshBasicMaterial( {color: 0xFF6347, wireframe: true } ))
+//   ship.rotateX(Math.PI / 5)
+//   // ship.rotate
+//   group.add(ship)
+//   group.scale.set(0.7, 0.3, 1)
+//   // ship.lookAt(5, 5, 5)
+//   // ship.rotateX(Math.PI / 10)
+//   // ship.add(camera)
+//   // camera.position.z = 10
+//   return ship
+// }
 
+let fpsCounter = 0
 function animate(): void {
+  fpsCounter++
   requestAnimationFrame( animate )
 
   // controls.update()
@@ -94,37 +87,55 @@ window.addEventListener('click', e => {
 
 window.addEventListener('keydown', (e) => {
   if (e.code === 'KeyW') {
-    goingForwards = true
+    isAccelerating = true
   }
 })
 
 window.addEventListener('keyup', (e) => {
   if (e.code === 'KeyW') {
-    goingForwards = false
+    isAccelerating = false
   }
 })
 
 window.addEventListener('mousemove', e => {
-  // e.preventDefault
-  console.log(e.movementX, e.movementY)
-  // const event = new MouseEvent('mousemove', { clientX: SCREEN_WIDTH / 2, clientY: SCREEN_HEIGHT / 2 })
-  // document.getElementById('canvas')?.dispatchEvent(event)
+  // console.log(e.movementX, e.movementY)
+  if (e.movementX > 0) {
+    ship.rollRight(e.movementX)
+  } else if (e.movementX < 0) {
+    ship.rollLeft(e.movementX)
+  }
+
+  if (e.movementY > 0) {
+    ship.pitchUp(e.movementY)
+  } else if (e.movementY < 0) {
+    ship.pitchDown(e.movementY)
+  }
 })
 
 setInterval(() => {
-  console.log(goingForwards)
-  if (goingForwards) {
-    ship.position.z -= 0.1
-    camera.position.x = ship.position.x
-    camera.position.y = ship.position.y + 5
-    camera.position.z = ship.position.z + 5
-    camera.lookAt(ship.position)
+  // console.log(isAccelerating)
+  if (isAccelerating) {
+    // ship.position.z -= 0.1
+    // camera.position.x = ship.position.x
+    // camera.position.y = ship.position.y + 3
+    // camera.position.z = ship.position.z + 5
+    // camera.lookAt(ship.position)
+    ship.updateSpeed(isAccelerating)
+    ship.updatePosition()
+    // console.lo
   }
+
+  if (fpsCounterDiv) fpsCounterDiv.innerHTML = String(fpsCounter * 100)
+  fpsCounter = 0
 }, 10)
-// camera.position.x = ship.position.x
-// camera.position.y = ship.position.y + 5
-// camera.position.z = ship.position.z + 5
-// camera.lookAt(ship.position)
+
+// THREE.DefaultLoadingManager.onLoad = () => {
+//   console.log('loaded')
+//   camera.position.x = ship.position.x
+//   camera.position.y = ship.position.y + 5
+//   camera.position.z = ship.position.z + 5
+//   camera.lookAt(ship.position)
+// }
 
 init()
 
