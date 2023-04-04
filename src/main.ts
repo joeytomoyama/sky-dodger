@@ -44,31 +44,16 @@ function init(): void {
   const gridHelper = new THREE.GridHelper(200, 50)
   scene.add(gridHelper)
 
-  ship = new Ship(20)
+  ship = new Ship(20, camera)
 
   scene.add( ship.model )
-  scene.add( ship.arrowHelper )
+  scene.add( ship.arrowHelperPitch )
+  scene.add( ship.arrowHelperRoll )
 
   renderer.render(scene, camera)
 
   animate()
 }
-
-// function makeShip(): THREE.Mesh {
-//   const group = new THREE.Group()
-//   const shipGeo = new THREE.TetrahedronGeometry(5)
-//   shipGeo.rotateY(Math.PI / 4)
-//   const ship = new THREE.Mesh(shipGeo, new THREE.MeshBasicMaterial( {color: 0xFF6347, wireframe: true } ))
-//   ship.rotateX(Math.PI / 5)
-//   // ship.rotate
-//   group.add(ship)
-//   group.scale.set(0.7, 0.3, 1)
-//   // ship.lookAt(5, 5, 5)
-//   // ship.rotateX(Math.PI / 10)
-//   // ship.add(camera)
-//   // camera.position.z = 10
-//   return ship
-// }
 
 let fpsCounter = 0
 function animate(): void {
@@ -115,16 +100,16 @@ window.addEventListener('mousemove', e => {
 
 setInterval(() => {
   // console.log(isAccelerating)
-  if (isAccelerating) {
-    // ship.position.z -= 0.1
-    // camera.position.x = ship.position.x
-    // camera.position.y = ship.position.y + 3
-    // camera.position.z = ship.position.z + 5
-    // camera.lookAt(ship.position)
-    ship.updateSpeed(isAccelerating)
-    ship.updatePosition()
-    // console.lo
-  }
+  // ship.position.z -= 0.1
+  camera.position.x = ship.model.position.x - ship.axisRoll.x * 10
+  camera.position.y = ship.model.position.y - ship.axisRoll.y * 10
+  camera.position.z = ship.model.position.z - ship.axisRoll.z * 10
+  camera.lookAt(ship.model.position)
+  camera.rotation.x = ship.model.rotation.x
+  camera.rotation.y = ship.model.rotation.y
+  camera.rotation.z = ship.model.rotation.z
+  ship.updateSpeed(isAccelerating)
+  ship.updatePosition()
 
   if (fpsCounterDiv) fpsCounterDiv.innerHTML = String(fpsCounter * 100)
   fpsCounter = 0
