@@ -25,6 +25,9 @@ let starGroup: THREE.Group
 let starArray: Object3D[] = []
 
 let isAccelerating: boolean
+let isDecelerating: boolean
+let isYawingRight: boolean
+let isYawingLeft: boolean
 let isPitchingUp: boolean
 
 let isGameOver: boolean = false
@@ -36,7 +39,7 @@ function init(): void {
 
   scene = new THREE.Scene()
 
-  scene.fog = new THREE.Fog( 'black', 500, 2000)
+  scene.fog = new THREE.Fog( 'black', 100, 1000)
 
   //
 
@@ -95,9 +98,16 @@ function addStar(starGeometry: BufferGeometry, starMaterial: THREE.Material, sta
   starArray.push(star)
 }
 
-let fpsCounter = 0
+let frameTime = Number.MAX_VALUE
+let startTime: number
+let endTime: number
 function animate(): void {
-  fpsCounter++
+  endTime = performance.now()
+  if (startTime) {
+    frameTime = endTime - startTime
+    if (fpsCounterDiv) fpsCounterDiv.innerHTML = (1000 / frameTime).toFixed(0)
+  }
+  startTime = performance.now()
   requestAnimationFrame( animate )
 
   // controls.update()
@@ -118,46 +128,29 @@ window.addEventListener('click', () => {
 })
 
 window.addEventListener('keydown', (e) => {
-  if (e.code === 'KeyW') {
-    isAccelerating = true
-  }
-  if (e.code === 'Space') {
-    isPitchingUp = true
-  }
+  if (e.code === 'KeyW') isAccelerating = true
+  if (e.code === 'KeyD') isYawingRight = true
+  if (e.code === 'KeyA') isYawingLeft = true
+  if (e.code === 'KeyS') isDecelerating = true
+  if (e.code === 'Space') isPitchingUp = true
 })
 
 window.addEventListener('keyup', (e) => {
-  if (e.code === 'KeyW') {
-    isAccelerating = false
-  }
-  if (e.code === 'Space') {
-    isPitchingUp = false
-  }
+  if (e.code === 'KeyW') isAccelerating = false
+  if (e.code === 'KeyD') isYawingRight = false
+  if (e.code === 'KeyA') isYawingLeft = false
+  if (e.code === 'KeyS') isDecelerating = false
+  if (e.code === 'Space') isPitchingUp = false
 })
 
 window.addEventListener('mousemove', e => {
   if (isGameOver) return
   if (document.pointerLockElement !== container) return
-  // console.log(e.movementX, e.movementY)
-  const impulseX = e.movementX / 400
-  const impulseY = e.movementY / 400
-
-  if (impulseX > 0) {
-    ship.rollRight(impulseX)
-  } else if (impulseX < 0) {
-    ship.rollLeft(impulseX)
-  }
-
-  if (impulseY > 0) {
-    ship.pitchUp(impulseY)
-  } else if (impulseY < 0) {
-    ship.pitchDown(impulseY)
-  }
+  ship.handleMouseInput(e.movementX, e.movementY)
 })
 
 window.addEventListener('resize', () => {
   renderer.setSize( window.innerWidth, window.innerHeight )
-
   camera.aspect = window.innerWidth / window.innerHeight
   camera.updateProjectionMatrix()
 })
@@ -210,14 +203,13 @@ setInterval(() => {
   ship.updateSpeed(isAccelerating)
   ship.updatePosition()
 
-  if (isPitchingUp) ship.pitchUp(0.01)
+  if (isYawingRight) ship.yawRight(-0.005)
+  if (isYawingLeft) ship.yawLeft(0.005)
+  if (isPitchingUp) ship.pitchUp(0.05)
 
   pointLight.position.set(ship.model.position.x, ship.model.position.y + 15, ship.model.position.z)
 
   checkCollision(ship, starGroup)
-
-  if (fpsCounterDiv) fpsCounterDiv.innerHTML = String(fpsCounter * 100)
-  fpsCounter = 0
 }, 10)
 
 // THREE.DefaultLoadingManager.onLoad = () => {
@@ -229,7 +221,3 @@ setInterval(() => {
 // }
 
 init()
-
-/*
-in battlefield 3 when you are flying in the pc version you can control the jet by using the w, a ,s d keys and the mouse. how does the game calculate
-*/
