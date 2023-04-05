@@ -5,18 +5,17 @@ import { PerspectiveCamera, Vector3 } from 'three'
 
 export default class Ship {
     public speed
-    private maxSpeed: number
+    private maxSpeed = 15
     private position = new Vector3(0, 0, 0)
+
     public axisRoll = new Vector3(0, 0, -1)
     public axisYaw = new Vector3(0, 1, 0)
-    private axisPitch = new Vector3(1, 0, 0)
+    public axisPitch = new Vector3(1, 0, 0)
+
     public arrowHelperRoll = new THREE.ArrowHelper(this.axisRoll.normalize(), this.position, 5, 'red');
     public arrowHelperYaw = new THREE.ArrowHelper(this.axisYaw.normalize(), this.position, 5, 'green');
     public arrowHelperPitch = new THREE.ArrowHelper(this.axisPitch.normalize(), this.position, 5, 'blue');
-
-    // private xAxis = new THREE.Vector3(1, 0, 0);
-    // private yAxis = new THREE.Vector3(0, 1, 0);
-    // private zAxis = new THREE.Vector3(0, 0, 1);
+    
     private matrix = new THREE.Matrix4()
 
     private boxGeo = new THREE.BoxGeometry(10, 10, 10)
@@ -30,11 +29,10 @@ export default class Ship {
 
     private camera: PerspectiveCamera
 
-    constructor(maxSpeed: number, camera: PerspectiveCamera) {
+    constructor(camera: PerspectiveCamera) {
         this.speed = 0
-        this.maxSpeed = maxSpeed
         this.camera = camera
-        this.model.scale.set(0.7, 0.3, 1)
+        this.model.scale.set(1.5, 0.2, 1.5)
     }
 
     updateSpeed(isAccelerating: boolean) {
@@ -45,7 +43,7 @@ export default class Ship {
         this.model.position.x += this.axisRoll.x * this.speed
         this.model.position.y += this.axisRoll.y * this.speed
         this.model.position.z += this.axisRoll.z * this.speed
-        console.log(this.model.rotation.x.toFixed(2), this.model.rotation.y.toFixed(2), this.model.rotation.z.toFixed(2))
+        // console.log(this.model.rotation.x.toFixed(2), this.model.rotation.y.toFixed(2), this.model.rotation.z.toFixed(2))
 
         // this.model.position.z -= this.speed / 100
 
