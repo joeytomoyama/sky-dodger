@@ -1,9 +1,10 @@
 import './style.css'
 import * as THREE from 'three'
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { BufferGeometry, Group, Object3D, PerspectiveCamera, SphereGeometry, WebGLRenderer } from 'three';
+import { BoxGeometry, BufferGeometry, Group, Object3D, PerspectiveCamera, SphereGeometry, WebGLRenderer } from 'three';
 
 import Ship from './Ship'
+import Obstacles from './Obstacles';
 
 console.log('test')
 
@@ -21,8 +22,7 @@ let ship: Ship
 
 let pointLight: THREE.PointLight
 
-let starGroup: THREE.Group
-let starArray: Object3D[] = []
+let obstacles: Obstacles
 
 let isAccelerating: boolean
 let isDecelerating: boolean
@@ -39,7 +39,7 @@ function init(): void {
 
   scene = new THREE.Scene()
 
-  scene.fog = new THREE.Fog('black', 100, 1000)
+  // scene.fog = new THREE.Fog('black', 100, 1000)
 
   //
 
@@ -72,14 +72,13 @@ function init(): void {
   const ambientLight = new THREE.AmbientLight(0xffffff)
   scene.add(ambientLight)
 
-  // stars
-  const starGeometry = new THREE.SphereGeometry(275, 24, 24)
-  const starMaterial = new THREE.MeshStandardMaterial( { color: 0xFF6347, wireframe: false })
-  starGroup = new THREE.Group()
-  scene.add(starGroup)
+  // obstacles
+  const obsGeometry = new THREE.SphereGeometry(175, 24, 24)
+  const obsMaterial = new THREE.MeshStandardMaterial( { color: 0xFF6347, wireframe: false, opacity: 0.7, transparent: false })
 
-
-  Array(1000).fill(undefined).forEach(() => addStar(starGeometry, starMaterial, starGroup))
+  // obstacles = new Obstacles([obsGeometry, new THREE.TorusGeometry( 175, 45 ), new THREE.BoxGeometry( 100, 70, 250)], obsMaterial)
+  obstacles = new Obstacles([obsGeometry], obsMaterial)
+  scene.add(obstacles.create(100, 2000, 50, 500))
 
   renderer.render(scene, camera)
 
@@ -87,16 +86,16 @@ function init(): void {
 }
 
 
-function addStar(starGeometry: BufferGeometry, starMaterial: THREE.Material, starGroup: Group) {
+// function addStar(obsGeometry: BufferGeometry, obsMaterial: THREE.Material, starGroup: Group) {
   
-  const star = new THREE.Mesh( starGeometry, starMaterial )
-  const [x, y, z] = Array(3).fill(undefined).map(() => THREE.MathUtils.randFloatSpread( 6000 ))
-  star.position.set(x, Math.abs(y) + 275, z)
+//   const star = new THREE.Mesh( obsGeometry, obsMaterial )
+//   const [x, y, z] = Array(3).fill(undefined).map(() => THREE.MathUtils.randFloatSpread( 6000 ))
+//   star.position.set(x, Math.abs(y) + 275, z)
 
-  starGroup.add(star)
+//   starGroup.add(star)
 
-  starArray.push(star)
-}
+//   starArray.push(star)
+// }
 
 function gameOver() {
   isGameOver = true
@@ -137,47 +136,47 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix()
 })
 
-function checkCollision(ship: Ship, starGroup: Group): void {
-  if (ship.model.position.y < 0) gameOver()
-  // const boundingBox = new THREE.Box3().setFromObject(ship.model)
-  // let boundingSphere: THREE.Sphere
-  // starGroup.traverse(star => {
-  //   boundingSphere = new THREE.Sphere(star.position, 275)
-  //   if (boundingBox.intersectsSphere(boundingSphere)) gameOver()
-  // })
+// function checkCollision(ship: Ship, starGroup: Group): void {
+//   if (ship.model.position.y < 0) gameOver()
+//   // const boundingBox = new THREE.Box3().setFromObject(ship.model)
+//   // let boundingSphere: THREE.Sphere
+//   // starGroup.traverse(star => {
+//   //   boundingSphere = new THREE.Sphere(star.position, 275)
+//   //   if (boundingBox.intersectsSphere(boundingSphere)) gameOver()
+//   // })
 
-  const raycasterZ = new THREE.Raycaster()
-  const raycasterX1 = new THREE.Raycaster()
-  const raycasterX2 = new THREE.Raycaster()
+//   const raycasterZ = new THREE.Raycaster()
+//   const raycasterX1 = new THREE.Raycaster()
+//   const raycasterX2 = new THREE.Raycaster()
 
-  raycasterZ.set(ship.model.position, ship.axisRoll)
-  raycasterX1.set(ship.model.position, ship.axisPitch)
-  raycasterX2.set(ship.model.position, ship.axisPitch.clone().negate())
+//   raycasterZ.set(ship.model.position, ship.axisRoll)
+//   raycasterX1.set(ship.model.position, ship.axisPitch)
+//   raycasterX2.set(ship.model.position, ship.axisPitch.clone().negate())
 
-  const intersectionsZ = raycasterZ.intersectObjects(starArray)
-  const intersectionsX1 = raycasterX1.intersectObjects(starArray)
-  const intersectionsX2 = raycasterX2.intersectObjects(starArray)
-  // const isCollision = !intersectionsZ.every(i => i.distance > 10)
-  const isCollisionZ = intersectionsZ[0]?.distance < 10
-  const isCollisionX1 = intersectionsX1[0]?.distance < 10
-  const isCollisionX2 = intersectionsX2[0]?.distance < 10
-  if (isCollisionZ) gameOver()
-  if (isCollisionX1) gameOver()
-  if (isCollisionX2) gameOver()
+//   const intersectionsZ = raycasterZ.intersectObjects(starArray)
+//   const intersectionsX1 = raycasterX1.intersectObjects(starArray)
+//   const intersectionsX2 = raycasterX2.intersectObjects(starArray)
+//   // const isCollision = !intersectionsZ.every(i => i.distance > 10)
+//   const isCollisionZ = intersectionsZ[0]?.distance < 10
+//   const isCollisionX1 = intersectionsX1[0]?.distance < 10
+//   const isCollisionX2 = intersectionsX2[0]?.distance < 10
+//   if (isCollisionZ) gameOver()
+//   if (isCollisionX1) gameOver()
+//   if (isCollisionX2) gameOver()
 
-  // const vector = new THREE.Vector3()
-  // starGroup.traverse(star => {
-  //   raycaster.set(ship.model.position, vector.subVectors(ship.model.position, star.position))
-  //   const intersects = raycaster.intersectObject(star)
-  //   // console.log(intersects[0]?.distance)
-  //   if (intersects[0]?.distance < 10) gameOver()
-  // })
-}
+//   // const vector = new THREE.Vector3()
+//   // starGroup.traverse(star => {
+//   //   raycaster.set(ship.model.position, vector.subVectors(ship.model.position, star.position))
+//   //   const intersects = raycaster.intersectObject(star)
+//   //   // console.log(intersects[0]?.distance)
+//   //   if (intersects[0]?.distance < 10) gameOver()
+//   // })
+// }
 
 setInterval(() => {
+  ship.updatePosition()
   if (isGameOver) return
   ship.updateSpeed(isAccelerating, isDecelerating)
-  ship.updatePosition()
 
   if (isYawingRight) ship.yaw(-0.005)
   if (isYawingLeft) ship.yaw(0.005)
@@ -197,18 +196,19 @@ function animate(): void {
   }
   startTime = performance.now()
 
-  requestAnimationFrame( animate )
-
+  
   // controls.update()
-
+  
   
   ship.syncShip()
   ship.syncCamera()
-
+  
   pointLight.position.set(ship.model.position.x, ship.model.position.y + 15, ship.model.position.z)
-
-  checkCollision(ship, starGroup)
-
+  
+  const isCollision = obstacles.checkCollision(ship)
+  if (isCollision) gameOver()
+  
+  requestAnimationFrame( animate )
   renderer.render( scene, camera )
 }
 
