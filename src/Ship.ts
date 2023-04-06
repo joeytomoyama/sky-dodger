@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { PerspectiveCamera, Vector3 } from 'three'
+import { MathUtils, PerspectiveCamera, Vector3 } from 'three'
 // import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
 // import { Face } from 'three/examples/jsm/math/ConvexHull'
 
@@ -36,12 +36,17 @@ export default class Ship {
         this.model.scale.set(1.5, 0.2, 1.5)
     }
 
-    updateSpeed(isAccelerating: boolean) {
-        this.speed = isAccelerating ? Math.min(this.maxSpeed, this.speed + 0.01) : Math.max(this.minSpeed, this.speed - 0.01)
+    updateSpeed(isAccelerating: boolean, isDecelerating: boolean): void {
+        // this.speed = isAccelerating ? Math.min(this.maxSpeed, this.speed + 0.01) : Math.max(this.minSpeed, this.speed - 0.01)
+        if (isAccelerating) this.speed += 0.01
+        if (isDecelerating) this.speed -= 0.01
+        if (!isAccelerating && !isDecelerating) this.speed -= 0.002
+
+        this.speed = MathUtils.clamp(this.speed, this.minSpeed, this.maxSpeed)
     }
 
     updatePosition() {
-        this.model.position.addScaledVector(this.axisRoll, this.speed)
+        this.position.addScaledVector(this.axisRoll, this.speed)
 
         // console.log("axis :", this.axisPitch.x.toFixed(2), this.axisPitch.y.toFixed(2), this.axisPitch.z.toFixed(2))
         // console.log((Math.atan2(this.axisPitch.x, this.axisPitch.y) * (180 / Math.PI)) - 90)
@@ -54,24 +59,30 @@ export default class Ship {
         this.arrowHelperYaw.setDirection(this.axisYaw)
     }
 
+    syncShip() {
+        this.model.position.set(this.position.x, this.position.y, this.position.z)
+    }
+
+    syncCamera() {
+        this.camera.position.x = this.model.position.x - this.axisRoll.x * 10 + this.axisYaw.x * 5
+        this.camera.position.y = this.model.position.y - this.axisRoll.y * 10 + this.axisYaw.y * 5
+        this.camera.position.z = this.model.position.z - this.axisRoll.z * 10 + this.axisYaw.z * 5
+
+        this.camera.lookAt(this.model.position)
+
+        this.camera.setRotationFromEuler(this.model.rotation)
+    }
+
     handleMouseInput(movementX: number, movementY: number): void {
         const impulseX = movementX / 400
         const impulseY = movementY / 400
 
-        if (impulseX > 0) {
-            this.rollRight(impulseX)
-        } else if (impulseX < 0) {
-            this.rollLeft(impulseX)
-        }
+        this.roll(impulseX)
 
-        if (impulseY > 0) {
-            this.pitchUp(impulseY)
-        } else if (impulseY < 0) {
-            this.pitchDown(impulseY)
-        }
+        this.pitch(impulseY)
     }
 
-    rollRight(impulse: number): void {
+    roll(impulse: number): void {
         // if (impulse > 2.2) impulse = 2.2
         // const forwardDirection = new THREE.Vector3(0, 0, -1);
         // forwardDirection.applyEuler(new THREE.Euler(Math.PI / 2, Math.PI / 2, Math.PI / 2));
@@ -93,31 +104,10 @@ export default class Ship {
         // this.camera.rotateOnWorldAxis(this.axisRoll, impulse)
 
         // this.model.rotation.z = this.axisPitch.x
-        this.updateYaw()
+        // this.updateYaw()
     }
 
-    rollLeft(impulse: number): void {
-        // if (impulse < 2.2) impulse = -2.2
-        // this.model.rotation.z -= impulse
-
-        this.matrix.makeRotationAxis(this.axisRoll, impulse)
-        this.axisPitch.applyMatrix4(this.matrix)
-        this.arrowHelperPitch.setDirection(this.axisPitch)
-
-        // const quaternion = new THREE.Quaternion()
-        // quaternion.setFromRotationMatrix(this.matrix)
-        // this.model.quaternion.multiply(quaternion)
-        
-        // this.model.applyMatrix4(this.matrix)
-
-        this.model.rotateOnWorldAxis(this.axisRoll, impulse)
-        // this.camera.rotateOnWorldAxis(this.axisRoll, impulse)
-
-        // this.model.rotation.z = this.axisPitch.x
-        this.updateYaw()
-    }
-
-    pitchUp(impulse: number): void {
+    pitch(impulse: number): void {
         // if (impulse > 4.2) impulse = 4.2
         // this.model.rotation.x += impulse
 
@@ -138,36 +128,7 @@ export default class Ship {
         this.updateYaw()
     }
 
-    pitchDown(impulse: number): void {
-        // if (impulse < 4.2) impulse = -4.2
-        // this.model.rotation.x += impulse
-
-        this.matrix.makeRotationAxis(this.axisPitch, impulse)
-        this.axisRoll.applyMatrix4(this.matrix)
-        this.arrowHelperRoll.setDirection(this.axisRoll)
-        
-        // const quaternion = new THREE.Quaternion()
-        // quaternion.setFromRotationMatrix(this.matrix)
-        // this.model.quaternion.multiply(quaternion)
-        
-        // this.model.applyMatrix4(this.matrix)
-
-        this.model.rotateOnWorldAxis(this.axisPitch, impulse)
-        // this.camera.lookAt(this.model.position)
-
-        // this.model.rotation.x = this.axisRoll.x
-        this.updateYaw()
-    }
-
-    yawRight(impulse: number): void {
-        this.matrix.makeRotationAxis(this.axisYaw, impulse)
-        this.axisPitch.applyMatrix4(this.matrix)
-        this.axisRoll.applyMatrix4(this.matrix)
-        this.model.rotateOnWorldAxis(this.axisYaw, impulse)
-        // this.updateYaw()
-    }
-
-    yawLeft(impulse: number): void {
+    yaw(impulse: number): void {
         this.matrix.makeRotationAxis(this.axisYaw, impulse)
         this.axisPitch.applyMatrix4(this.matrix)
         this.axisRoll.applyMatrix4(this.matrix)

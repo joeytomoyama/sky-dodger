@@ -39,7 +39,7 @@ function init(): void {
 
   scene = new THREE.Scene()
 
-  scene.fog = new THREE.Fog( 'black', 100, 1000)
+  scene.fog = new THREE.Fog('black', 100, 1000)
 
   //
 
@@ -60,9 +60,9 @@ function init(): void {
   ship = new Ship(camera)
 
   scene.add( ship.model )
-  scene.add( ship.arrowHelperPitch )
-  scene.add( ship.arrowHelperRoll )
-  scene.add( ship.arrowHelperYaw )
+  // scene.add( ship.arrowHelperPitch )
+  // scene.add( ship.arrowHelperRoll )
+  // scene.add( ship.arrowHelperYaw )
 
   // LIGHTS
   pointLight = new THREE.PointLight(0xffffff)
@@ -98,29 +98,11 @@ function addStar(starGeometry: BufferGeometry, starMaterial: THREE.Material, sta
   starArray.push(star)
 }
 
-let frameTime = Number.MAX_VALUE
-let startTime: number
-let endTime: number
-function animate(): void {
-  endTime = performance.now()
-  if (startTime) {
-    frameTime = endTime - startTime
-    if (fpsCounterDiv) fpsCounterDiv.innerHTML = (1000 / frameTime).toFixed(0)
-  }
-  startTime = performance.now()
-  requestAnimationFrame( animate )
-
-  // controls.update()
-
-  
-  // ship.updatePosition()
-
-  renderer.render( scene, camera )
-}
-
 function gameOver() {
   isGameOver = true
-  document.getElementById('gameOverInactive')?.classList.add('gameOver')
+  const gameOverDiv = document.getElementById('gameOverInactive')
+  gameOverDiv?.classList.add('gameOver')
+  if (gameOverDiv) gameOverDiv.innerHTML = 'GAME OVER'
 }
 
 window.addEventListener('click', () => {
@@ -156,6 +138,7 @@ window.addEventListener('resize', () => {
 })
 
 function checkCollision(ship: Ship, starGroup: Group): void {
+  if (ship.model.position.y < 0) gameOver()
   // const boundingBox = new THREE.Box3().setFromObject(ship.model)
   // let boundingSphere: THREE.Sphere
   // starGroup.traverse(star => {
@@ -193,24 +176,41 @@ function checkCollision(ship: Ship, starGroup: Group): void {
 
 setInterval(() => {
   if (isGameOver) return
-  camera.position.x = ship.model.position.x - ship.axisRoll.x * 10 + ship.axisYaw.x * 5
-  camera.position.y = ship.model.position.y - ship.axisRoll.y * 10 + ship.axisYaw.y * 5
-  camera.position.z = ship.model.position.z - ship.axisRoll.z * 10 + ship.axisYaw.z * 5
-  camera.lookAt(ship.model.position)
-  camera.rotation.x = ship.model.rotation.x
-  camera.rotation.y = ship.model.rotation.y
-  camera.rotation.z = ship.model.rotation.z
-  ship.updateSpeed(isAccelerating)
+  ship.updateSpeed(isAccelerating, isDecelerating)
   ship.updatePosition()
 
-  if (isYawingRight) ship.yawRight(-0.005)
-  if (isYawingLeft) ship.yawLeft(0.005)
-  if (isPitchingUp) ship.pitchUp(0.05)
+  if (isYawingRight) ship.yaw(-0.005)
+  if (isYawingLeft) ship.yaw(0.005)
+  if (isPitchingUp) ship.pitch(0.05)
+
+  // checkCollision(ship, starGroup)
+}, 10)
+
+let frameTime = Number.MAX_VALUE
+let startTime: number
+let endTime: number
+function animate(): void {
+  endTime = performance.now()
+  if (startTime) {
+    frameTime = endTime - startTime
+    if (fpsCounterDiv) fpsCounterDiv.innerHTML = (1000 / frameTime).toFixed(0)
+  }
+  startTime = performance.now()
+
+  requestAnimationFrame( animate )
+
+  // controls.update()
+
+  
+  ship.syncShip()
+  ship.syncCamera()
 
   pointLight.position.set(ship.model.position.x, ship.model.position.y + 15, ship.model.position.z)
 
   checkCollision(ship, starGroup)
-}, 10)
+
+  renderer.render( scene, camera )
+}
 
 // THREE.DefaultLoadingManager.onLoad = () => {
 //   console.log('loaded')
