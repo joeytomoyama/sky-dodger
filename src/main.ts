@@ -1,10 +1,12 @@
 import './style.css'
 import * as THREE from 'three'
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { BoxGeometry, BufferGeometry, Group, Object3D, PerspectiveCamera, SphereGeometry, WebGLRenderer } from 'three';
+import { PerspectiveCamera, WebGLRenderer } from 'three';
 
 import Ship from './Ship'
 import Obstacles from './Obstacles';
+import Wall from './Wall';
+import Ground from './Ground';
 
 console.log('test')
 
@@ -19,6 +21,8 @@ let renderer: WebGLRenderer
 // let controls: OrbitControls
 
 let ship: Ship
+let wall: Wall
+let ground: Ground
 
 let pointLight: THREE.PointLight
 
@@ -39,7 +43,8 @@ function init(): void {
 
   scene = new THREE.Scene()
 
-  // scene.fog = new THREE.Fog('black', 100, 1000)
+  scene.fog = new THREE.Fog('white', 100, 1000)
+  scene.background = new THREE.Color('white')
 
   //
 
@@ -55,7 +60,7 @@ function init(): void {
   // controls = new OrbitControls(camera, renderer.domElement)
 
   const gridHelper = new THREE.GridHelper(20000, 500)
-  scene.add(gridHelper)
+  // scene.add(gridHelper)
 
   ship = new Ship(camera)
 
@@ -63,6 +68,12 @@ function init(): void {
   // scene.add( ship.arrowHelperPitch )
   // scene.add( ship.arrowHelperRoll )
   // scene.add( ship.arrowHelperYaw )
+
+  wall = new Wall(ship)
+  // ground = new Ground(ship)
+
+  scene.add(wall.mesh)
+  // scene.add(ground.mesh)
 
   // LIGHTS
   pointLight = new THREE.PointLight(0xffffff)
@@ -76,28 +87,17 @@ function init(): void {
   const obsGeometry = new THREE.SphereGeometry(175, 24, 24)
   const obsMaterial = new THREE.MeshStandardMaterial( { color: 0xFF6347, wireframe: false, opacity: 0.7, transparent: false })
 
-  // obstacles = new Obstacles([obsGeometry, new THREE.TorusGeometry( 175, 45 ), new THREE.BoxGeometry( 100, 70, 250)], obsMaterial)
-  obstacles = new Obstacles([obsGeometry], obsMaterial)
-  scene.add(obstacles.create(100, 2000, 50, 500))
+  obstacles = new Obstacles([obsGeometry, new THREE.TorusGeometry( 175, 45 ), new THREE.BoxGeometry( 100, 70, 250)], obsMaterial)
+  // obstacles = new Obstacles([new THREE.BoxGeometry(300, 500, 30)], obsMaterial)
+  obstacles = new Obstacles([new THREE.SphereGeometry(300)], obsMaterial)
+  scene.add(obstacles.create(new THREE.Vector3(0, 0, -2000), 100, 2000, 50, 500))
 
   renderer.render(scene, camera)
 
   animate()
 }
 
-
-// function addStar(obsGeometry: BufferGeometry, obsMaterial: THREE.Material, starGroup: Group) {
-  
-//   const star = new THREE.Mesh( obsGeometry, obsMaterial )
-//   const [x, y, z] = Array(3).fill(undefined).map(() => THREE.MathUtils.randFloatSpread( 6000 ))
-//   star.position.set(x, Math.abs(y) + 275, z)
-
-//   starGroup.add(star)
-
-//   starArray.push(star)
-// }
-
-function gameOver() {
+export function gameOver() {
   isGameOver = true
   const gameOverDiv = document.getElementById('gameOverInactive')
   gameOverDiv?.classList.add('gameOver')
@@ -114,6 +114,7 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'KeyA') isYawingLeft = true
   if (e.code === 'KeyS') isDecelerating = true
   if (e.code === 'Space') isPitchingUp = true
+  if (e.code === 'KeyC') ship.pursuitCamera()
 })
 
 window.addEventListener('keyup', (e) => {
@@ -122,6 +123,7 @@ window.addEventListener('keyup', (e) => {
   if (e.code === 'KeyA') isYawingLeft = false
   if (e.code === 'KeyS') isDecelerating = false
   if (e.code === 'Space') isPitchingUp = false
+  if (e.code === 'KeyC') ship.chaseCamera()
 })
 
 window.addEventListener('mousemove', e => {
@@ -135,43 +137,6 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight
   camera.updateProjectionMatrix()
 })
-
-// function checkCollision(ship: Ship, starGroup: Group): void {
-//   if (ship.model.position.y < 0) gameOver()
-//   // const boundingBox = new THREE.Box3().setFromObject(ship.model)
-//   // let boundingSphere: THREE.Sphere
-//   // starGroup.traverse(star => {
-//   //   boundingSphere = new THREE.Sphere(star.position, 275)
-//   //   if (boundingBox.intersectsSphere(boundingSphere)) gameOver()
-//   // })
-
-//   const raycasterZ = new THREE.Raycaster()
-//   const raycasterX1 = new THREE.Raycaster()
-//   const raycasterX2 = new THREE.Raycaster()
-
-//   raycasterZ.set(ship.model.position, ship.axisRoll)
-//   raycasterX1.set(ship.model.position, ship.axisPitch)
-//   raycasterX2.set(ship.model.position, ship.axisPitch.clone().negate())
-
-//   const intersectionsZ = raycasterZ.intersectObjects(starArray)
-//   const intersectionsX1 = raycasterX1.intersectObjects(starArray)
-//   const intersectionsX2 = raycasterX2.intersectObjects(starArray)
-//   // const isCollision = !intersectionsZ.every(i => i.distance > 10)
-//   const isCollisionZ = intersectionsZ[0]?.distance < 10
-//   const isCollisionX1 = intersectionsX1[0]?.distance < 10
-//   const isCollisionX2 = intersectionsX2[0]?.distance < 10
-//   if (isCollisionZ) gameOver()
-//   if (isCollisionX1) gameOver()
-//   if (isCollisionX2) gameOver()
-
-//   // const vector = new THREE.Vector3()
-//   // starGroup.traverse(star => {
-//   //   raycaster.set(ship.model.position, vector.subVectors(ship.model.position, star.position))
-//   //   const intersects = raycaster.intersectObject(star)
-//   //   // console.log(intersects[0]?.distance)
-//   //   if (intersects[0]?.distance < 10) gameOver()
-//   // })
-// }
 
 setInterval(() => {
   ship.updatePosition()
@@ -202,14 +167,16 @@ function animate(): void {
   
   ship.syncShip()
   ship.syncCamera()
+  // ground.update()
+  wall.progress(-0.01)
   
   pointLight.position.set(ship.model.position.x, ship.model.position.y + 15, ship.model.position.z)
   
   const isCollision = obstacles.checkCollision(ship)
   if (isCollision) gameOver()
   
-  requestAnimationFrame( animate )
   renderer.render( scene, camera )
+  requestAnimationFrame( animate )
 }
 
 // THREE.DefaultLoadingManager.onLoad = () => {

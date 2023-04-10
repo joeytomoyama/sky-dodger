@@ -6,8 +6,8 @@ import { MathUtils, PerspectiveCamera, Vector3 } from 'three'
 export default class Ship {
     public speed
     private maxSpeed = 15
-    private minSpeed = 0
-    private position = new Vector3(0, 0, 0)
+    private minSpeed = 3
+    public position = new Vector3(0, 20, -50)
 
     public axisRoll = new Vector3(0, 0, -1)
     public axisYaw = new Vector3(0, 1, 0)
@@ -29,6 +29,7 @@ export default class Ship {
     public model = new THREE.Object3D().add(this.mesh)//.add(this.arrowHelperRoll);//.add(this.box)//.add(this.axisRoll)
 
     private camera: PerspectiveCamera
+    private invertedCamera = 1
 
     constructor(camera: PerspectiveCamera) {
         this.speed = 0
@@ -64,13 +65,28 @@ export default class Ship {
     }
 
     syncCamera() {
-        this.camera.position.x = this.model.position.x - this.axisRoll.x * 10 + this.axisYaw.x * 5
-        this.camera.position.y = this.model.position.y - this.axisRoll.y * 10 + this.axisYaw.y * 5
-        this.camera.position.z = this.model.position.z - this.axisRoll.z * 10 + this.axisYaw.z * 5
+        // this.camera.position.x = this.model.position.x - this.axisRoll.x * 10// * this.invertedCamera + this.axisYaw.x * 5
+        // this.camera.position.y = this.model.position.y - this.axisRoll.y * 10// * this.invertedCamera + this.axisYaw.y * 5
+        // this.camera.position.z = this.model.position.z - this.axisRoll.z * 10// * this.invertedCamera + this.axisYaw.z * 5
+        if (this.invertedCamera === 1) {
+            this.camera.position.x = this.model.position.x - this.axisRoll.x * 10 * this.invertedCamera + this.axisYaw.x * 5
+            this.camera.position.y = this.model.position.y - this.axisRoll.y * 10 * this.invertedCamera + this.axisYaw.y * 5
+            this.camera.position.z = this.model.position.z - this.axisRoll.z * 10 * this.invertedCamera + this.axisYaw.z * 5
+        } else {
+            this.camera.position.x = this.model.position.x - this.axisRoll.x * 10 * this.invertedCamera
+            this.camera.position.y = this.model.position.y - this.axisRoll.y * 10 * this.invertedCamera
+            this.camera.position.z = this.model.position.z - this.axisRoll.z * 10 * this.invertedCamera
+        }
 
+        // this.camera.setRotationFromEuler(this.model.rotation)
         this.camera.lookAt(this.model.position)
 
-        this.camera.setRotationFromEuler(this.model.rotation)
+        if (this.invertedCamera === 1) {
+            this.camera.rotation.set(this.model.rotation.x, this.model.rotation.y, this.model.rotation.z)
+        } else {
+            this.camera.rotation.set(this.camera.rotation.x, this.camera.rotation.y, -this.model.rotation.z)
+        }
+
     }
 
     handleMouseInput(movementX: number, movementY: number): void {
@@ -133,5 +149,17 @@ export default class Ship {
         this.axisPitch.applyMatrix4(this.matrix)
         this.axisRoll.applyMatrix4(this.matrix)
         this.model.rotateOnWorldAxis(this.axisYaw, impulse)
+    }
+
+    pursuitCamera() {
+        this.invertedCamera = -1
+    }
+
+    chaseCamera() {
+        this.invertedCamera = 1
+    }
+
+    updateCameraPosition() {
+
     }
 }

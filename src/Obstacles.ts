@@ -16,14 +16,14 @@ export default class Obstacles {
         this.obsArray = []
     }
 
-    create(amount: number, spread: number, minSize?: number, maxSize?: number): THREE.Group {
+    create(position: THREE.Vector3, amount: number, length: number, minSize?: number, maxSize?: number): THREE.Group {
         // const test = this.geometries[0] as SphereGeometry
         // if (minSize && maxSize) test.parameters.radius = MathUtils.randInt(minSize, maxSize)
         for (let i = 0; i < amount; i++) {
             const obstacle = new THREE.Mesh( this.geometries[THREE.MathUtils.randInt(0, this.geometries.length - 1)], this.material )
             // const obstacle = new THREE.Mesh( test, this.material )
-            const [x, y, z] = Array(3).fill(undefined).map(() => THREE.MathUtils.randFloatSpread( spread ))
-            obstacle.position.set(x, y + spread / 2, z)
+            const [x, y, z] = [position.x, position.y, position.z].map((position) => position + THREE.MathUtils.randFloatSpread( length ))
+            obstacle.position.set(x, y + length / 2, z)
             this.obsGroup.add(obstacle)
             this.obsArray.push(obstacle)
         }
@@ -32,7 +32,7 @@ export default class Obstacles {
     }
 
     checkCollision(ship: Ship): boolean {
-        if (ship.model.position.y < 0) return true
+        // if (ship.model.position.y < 0) return true
         // const boundingBox = new THREE.Box3().setFromObject(ship.model)
         // let boundingSphere: THREE.Sphere
         // starGroup.traverse(star => {
