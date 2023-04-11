@@ -34,7 +34,7 @@ export default class Ship {
     constructor(camera: PerspectiveCamera) {
         this.speed = 0
         this.camera = camera
-        this.model.scale.set(1.5, 0.2, 1.5)
+        this.model.scale.set(1, 0.15, 1)
     }
 
     updateSpeed(isAccelerating: boolean, isDecelerating: boolean): void {
@@ -84,7 +84,7 @@ export default class Ship {
         if (this.invertedCamera === 1) {
             this.camera.rotation.set(this.model.rotation.x, this.model.rotation.y, this.model.rotation.z)
         } else {
-            this.camera.rotation.set(this.camera.rotation.x, this.camera.rotation.y, -this.model.rotation.z)
+            this.camera.rotation.set(this.camera.rotation.x, this.camera.rotation.y, -this.model.rotation.z + Math.PI)
         }
 
     }

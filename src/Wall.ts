@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { MeshStandardMaterial, PlaneGeometry } from 'three'
 import { gameOver } from './main'
+import Ship from './Ship'
 
 export default class Wall {
 
@@ -8,7 +9,7 @@ export default class Wall {
     public progression: number = 0
     protected ship: Ship
 
-    constructor(ship: Shipt) {
+    constructor(ship: Ship) {
         this.ship = ship
         this.mesh = new THREE.Mesh(new PlaneGeometry(50000, 50000), new MeshStandardMaterial({ color: 'black', side: THREE.DoubleSide })).rotateY(Math.PI)
     }
@@ -16,7 +17,7 @@ export default class Wall {
     progress(delta: number) {
         this.progression += delta
         // this.mesh.translateZ(delta)
-        this.mesh.position.set(this.ship.model.position.x, this.ship.model.position.y, this.mesh.position.z + this.progression)
+        this.mesh.position.set(this.ship.model.position.x, this.ship.model.position.y, Math.min(this.mesh.position.z + this.progression, this.ship.position.z + 1000))
         if (this.ship.position.z >= this.mesh.position.z) gameOver()
         // console.log(this.ship.position.z, this.mesh.position.z)
     }

@@ -2,30 +2,31 @@
 import * as THREE from 'three'
 import Ship from './Ship'
 
-export default class Obstacles {
+export default class Obstacle {
 
+    private position: THREE.Vector3
+    private length: number
     private geometries: THREE.BufferGeometry[]
     private material: THREE.Material
     private obsGroup: THREE.Group
-    private obsArray: Array<THREE.Mesh>
 
-    constructor(geometries: THREE.BufferGeometry[], material: THREE.Material) {
+    constructor(position: THREE.Vector3, length: number, geometries: THREE.BufferGeometry[], material: THREE.Material) {
+        this.position = position
+        this.length = length
         this.geometries = geometries
         this.material = material
         this.obsGroup = new THREE.Group()
-        this.obsArray = []
     }
 
-    create(position: THREE.Vector3, amount: number, length: number, minSize?: number, maxSize?: number): THREE.Group {
+    create(amount: number, minSize?: number, maxSize?: number): THREE.Group {
         // const test = this.geometries[0] as SphereGeometry
         // if (minSize && maxSize) test.parameters.radius = MathUtils.randInt(minSize, maxSize)
         for (let i = 0; i < amount; i++) {
             const obstacle = new THREE.Mesh( this.geometries[THREE.MathUtils.randInt(0, this.geometries.length - 1)], this.material )
             // const obstacle = new THREE.Mesh( test, this.material )
-            const [x, y, z] = [position.x, position.y, position.z].map((position) => position + THREE.MathUtils.randFloatSpread( length ))
-            obstacle.position.set(x, y + length / 2, z)
+            const [x, y, z] = [this.position.x, this.position.y, this.position.z].map((position) => position + THREE.MathUtils.randFloatSpread( this.length - 100 ))
+            obstacle.position.set(x, y, z)
             this.obsGroup.add(obstacle)
-            this.obsArray.push(obstacle)
         }
         console.log(this.obsGroup.children)
         return this.obsGroup
@@ -68,5 +69,33 @@ export default class Obstacles {
         //   // console.log(intersects[0]?.distance)
         //   if (intersects[0]?.distance < 10) return true
         // })
+      }
+
+      isShipInside(ship: Ship) { 
+        const minX = this.position.x - this.length / 2;
+        const maxX = this.position.x + this.length / 2;
+        const minY = this.position.y - this.length / 2;
+        const maxY = this.position.y + this.length / 2;
+        const minZ = this.position.z - this.length / 2;
+        const maxZ = this.position.z + this.length / 2;
+
+        return ship.position.x >= minX && ship.position.x <= maxX &&
+                ship.position.y >= minY && ship.position.y <= maxY &&
+                ship.position.z >= minZ && ship.position.z <= maxZ;
+      }
+
+      isShipPassed(ship: Ship) {
+        const minZ = this.position.z - this.length / 2;
+        const maxZ = this.position.z + this.length / 2;
+
+        return ship.position.z >= minZ && ship.position.z <= maxZ;
+      }
+
+      getPosition() {
+        return this.position
+      }
+
+      getGroup() {
+        return this.obsGroup
       }
 }
