@@ -159,6 +159,7 @@ setInterval(() => {
 }, 10)
 
 function animate(): void {
+  // draw fps
   endTime = performance.now()
   if (startTime) {
     frameTime = endTime - startTime
