@@ -17,7 +17,7 @@ export default class Wall {
     progress(delta: number) {
         this.progression += delta
         // this.mesh.translateZ(delta)
-        this.mesh.position.set(this.ship.model.position.x, this.ship.model.position.y, Math.min(this.mesh.position.z + this.progression, this.ship.position.z + 1000))
+        this.mesh.position.set(this.ship.position.x, this.ship.position.y, Math.min(this.mesh.position.z + this.progression, this.ship.position.z + 1000))
         if (this.ship.position.z >= this.mesh.position.z) gameOver()
         // console.log(this.ship.position.z, this.mesh.position.z)
     }

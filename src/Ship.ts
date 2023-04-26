@@ -1,40 +1,39 @@
 import * as THREE from 'three'
-import { MathUtils, PerspectiveCamera, Vector3 } from 'three'
 // import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
 // import { Face } from 'three/examples/jsm/math/ConvexHull'
 
-export default class Ship {
+export default class Ship extends THREE.Object3D {
     public speed
     private maxSpeed = 15
     private minSpeed = 3
-    public position = new Vector3(0, 20, -50)
+    public position = new THREE.Vector3(0, 20, -50)
 
-    public axisRoll = new Vector3(0, 0, -1)
-    public axisYaw = new Vector3(0, 1, 0)
-    public axisPitch = new Vector3(1, 0, 0)
+    public axisRoll = new THREE.Vector3(0, 0, -1)
+    public axisYaw = new THREE.Vector3(0, 1, 0)
+    public axisPitch = new THREE.Vector3(1, 0, 0)
 
-    public arrowHelperRoll = new THREE.ArrowHelper(this.axisRoll.normalize(), this.position, 5, 'red');
-    public arrowHelperYaw = new THREE.ArrowHelper(this.axisYaw.normalize(), this.position, 5, 'green');
-    public arrowHelperPitch = new THREE.ArrowHelper(this.axisPitch.normalize(), this.position, 5, 'blue');
+    // public arrowHelperRoll = new THREE.ArrowHelper(this.axisRoll.normalize(), this.position, 5, 'red');
+    // public arrowHelperYaw = new THREE.ArrowHelper(this.axisYaw.normalize(), this.position, 5, 'green');
+    // public arrowHelperPitch = new THREE.ArrowHelper(this.axisPitch.normalize(), this.position, 5, 'blue');
     
-    private matrix = new THREE.Matrix4()
+    private rotationMatrix = new THREE.Matrix4()
 
     // private boxGeo = new THREE.BoxGeometry(10, 10, 10)
     // private box = new THREE.Mesh(this.boxGeo, new THREE.MeshBasicMaterial( {color: 0xFF6347, wireframe: true } ))
 
     private geo = new THREE.TetrahedronGeometry(5)
     private mesh = new THREE.Mesh(this.geo, new THREE.MeshStandardMaterial( {color: 'grey', wireframe: false } )) //0xFF6347
-    .rotateOnWorldAxis(new Vector3(0, 1, 0), Math.PI / 4)
-    .rotateOnWorldAxis(new Vector3(1, 0, 0), Math.PI / 5)
-    public model = new THREE.Object3D().add(this.mesh)//.add(this.arrowHelperRoll);//.add(this.box)//.add(this.axisRoll)
+    .rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4)
+    .rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), Math.PI / 5)
+    // public model = new THREE.Object3D().add(this.mesh)//.add(this.arrowHelperRoll);//.add(this.box)//.add(this.axisRoll)
 
-    private camera: PerspectiveCamera
-    private invertedCamera = 1
+    public invertedCamera = 1
 
-    constructor(camera: PerspectiveCamera) {
+    constructor() {
+        super()
+        this.add(this.mesh)
         this.speed = 0
-        this.camera = camera
-        this.model.scale.set(1, 0.15, 1)
+        this.scale.set(1, 0.15, 1)
     }
 
     updateSpeed(isAccelerating: boolean, isDecelerating: boolean): void {
@@ -43,7 +42,7 @@ export default class Ship {
         if (isDecelerating) this.speed -= 0.01
         if (!isAccelerating && !isDecelerating) this.speed -= 0.002
 
-        this.speed = MathUtils.clamp(this.speed, this.minSpeed, this.maxSpeed)
+        this.speed = THREE.MathUtils.clamp(this.speed, this.minSpeed, this.maxSpeed)
     }
 
     updatePosition() {
@@ -51,42 +50,17 @@ export default class Ship {
 
         // console.log("axis :", this.axisPitch.x.toFixed(2), this.axisPitch.y.toFixed(2), this.axisPitch.z.toFixed(2))
         // console.log((Math.atan2(this.axisPitch.x, this.axisPitch.y) * (180 / Math.PI)) - 90)
-        // console.log("model:", this.model.rotation.x.toFixed(2), this.model.rotation.y.toFixed(2), this.model.rotation.z.toFixed(2))
+        // console.log("model:", this.rotation.x.toFixed(2), this.rotation.y.toFixed(2), this.rotation.z.toFixed(2))
         // console.log("\n")
     }
 
     updateYaw() {
         this.axisYaw = this.axisYaw.crossVectors(this.axisPitch, this.axisRoll)//this.axisRoll.dot(this.axisPitch)
-        this.arrowHelperYaw.setDirection(this.axisYaw)
+        // this.arrowHelperYaw.setDirection(this.axisYaw)
     }
 
     syncShip() {
-        this.model.position.set(this.position.x, this.position.y, this.position.z)
-    }
-
-    syncCamera() {
-        // this.camera.position.x = this.model.position.x - this.axisRoll.x * 10// * this.invertedCamera + this.axisYaw.x * 5
-        // this.camera.position.y = this.model.position.y - this.axisRoll.y * 10// * this.invertedCamera + this.axisYaw.y * 5
-        // this.camera.position.z = this.model.position.z - this.axisRoll.z * 10// * this.invertedCamera + this.axisYaw.z * 5
-        if (this.invertedCamera === 1) {
-            this.camera.position.x = this.model.position.x - this.axisRoll.x * 10 * this.invertedCamera + this.axisYaw.x * 5
-            this.camera.position.y = this.model.position.y - this.axisRoll.y * 10 * this.invertedCamera + this.axisYaw.y * 5
-            this.camera.position.z = this.model.position.z - this.axisRoll.z * 10 * this.invertedCamera + this.axisYaw.z * 5
-        } else {
-            this.camera.position.x = this.model.position.x - this.axisRoll.x * 10 * this.invertedCamera
-            this.camera.position.y = this.model.position.y - this.axisRoll.y * 10 * this.invertedCamera
-            this.camera.position.z = this.model.position.z - this.axisRoll.z * 10 * this.invertedCamera
-        }
-
-        // this.camera.setRotationFromEuler(this.model.rotation)
-        this.camera.lookAt(this.model.position)
-
-        if (this.invertedCamera === 1) {
-            this.camera.rotation.set(this.model.rotation.x, this.model.rotation.y, this.model.rotation.z)
-        } else {
-            this.camera.rotation.set(this.camera.rotation.x, this.camera.rotation.y, -this.model.rotation.z + Math.PI)
-        }
-
+        this.position.set(this.position.x, this.position.y, this.position.z)
     }
 
     handleMouseInput(movementX: number, movementY: number): void {
@@ -100,55 +74,55 @@ export default class Ship {
 
     roll(impulse: number): void {
         // if (impulse > 2.2) impulse = 2.2
-        // const forwardDirection = new THREE.Vector3(0, 0, -1);
+        // const forwardDirection = new THREE.THREE.Vector3(0, 0, -1);
         // forwardDirection.applyEuler(new THREE.Euler(Math.PI / 2, Math.PI / 2, Math.PI / 2));
         // console.log(forwardDirection)
 
-        // this.model.rotation.z -= impulse
+        // this.rotation.z -= impulse
 
-        this.matrix.makeRotationAxis(this.axisRoll, impulse)
-        this.axisPitch.applyMatrix4(this.matrix)
-        this.arrowHelperPitch.setDirection(this.axisPitch)
+        this.rotationMatrix.makeRotationAxis(this.axisRoll, impulse)
+        this.axisPitch.applyMatrix4(this.rotationMatrix)
+        // this.arrowHelperPitch.setDirection(this.axisPitch)
 
         // const quaternion = new THREE.Quaternion()
-        // quaternion.setFromRotationMatrix(this.matrix)
-        // this.model.quaternion.multiply(quaternion)
+        // quaternion.setFromRotationMatrix(this.rotationMatrix)
+        // this.quaternion.multiply(quaternion)
         
-        // this.model.applyMatrix4(this.matrix)
+        // this.applyMatrix4(this.rotationMatrix)
 
-        this.model.rotateOnWorldAxis(this.axisRoll, impulse)
+        this.rotateOnWorldAxis(this.axisRoll, impulse)
         // this.camera.rotateOnWorldAxis(this.axisRoll, impulse)
 
-        // this.model.rotation.z = this.axisPitch.x
+        // this.rotation.z = this.axisPitch.x
         // this.updateYaw()
     }
 
     pitch(impulse: number): void {
         // if (impulse > 4.2) impulse = 4.2
-        // this.model.rotation.x += impulse
+        // this.rotation.x += impulse
 
-        this.matrix.makeRotationAxis(this.axisPitch, impulse)
-        this.axisRoll.applyMatrix4(this.matrix)
-        this.arrowHelperRoll.setDirection(this.axisRoll)
+        this.rotationMatrix.makeRotationAxis(this.axisPitch, impulse)
+        this.axisRoll.applyMatrix4(this.rotationMatrix)
+        // this.arrowHelperRoll.setDirection(this.axisRoll)
         
         // const quaternion = new THREE.Quaternion()
-        // quaternion.setFromRotationMatrix(this.matrix)
-        // this.model.quaternion.multiply(quaternion)
+        // quaternion.setFromRotationMatrix(this.rotationMatrix)
+        // this.quaternion.multiply(quaternion)
         
-        // this.model.applyMatrix4(this.matrix)
+        // this.applyMatrix4(this.rotationMatrix)
 
-        this.model.rotateOnWorldAxis(this.axisPitch, impulse)
-        // this.camera.lookAt(this.model.position)
+        this.rotateOnWorldAxis(this.axisPitch, impulse)
+        // this.camera.lookAt(this.position)
 
-        // this.model.rotation.x = this.axisRoll.x
+        // this.rotation.x = this.axisRoll.x
         this.updateYaw()
     }
 
     yaw(impulse: number): void {
-        this.matrix.makeRotationAxis(this.axisYaw, impulse)
-        this.axisPitch.applyMatrix4(this.matrix)
-        this.axisRoll.applyMatrix4(this.matrix)
-        this.model.rotateOnWorldAxis(this.axisYaw, impulse)
+        this.rotationMatrix.makeRotationAxis(this.axisYaw, impulse)
+        this.axisPitch.applyMatrix4(this.rotationMatrix)
+        this.axisRoll.applyMatrix4(this.rotationMatrix)
+        this.rotateOnWorldAxis(this.axisYaw, impulse)
     }
 
     pursuitCamera() {
@@ -157,9 +131,5 @@ export default class Ship {
 
     chaseCamera() {
         this.invertedCamera = 1
-    }
-
-    updateCameraPosition() {
-
     }
 }

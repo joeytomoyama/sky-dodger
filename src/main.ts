@@ -4,6 +4,7 @@ import * as THREE from 'three'
 // import { DefaultLoadingManager, PerspectiveCamera, WebGLRenderer } from 'three';
 
 import Ship from './Ship'
+import ShipCamera from './ShipCamera'
 import Obstacles from './Obstacles';
 import Wall from './Wall';
 import Ground from './Ground';
@@ -20,6 +21,7 @@ let renderer: THREE.WebGLRenderer
 // let controls: OrbitControls
 
 let ship: Ship
+let shipCamera: ShipCamera
 let wall: Wall
 let ground: Ground
 
@@ -51,10 +53,6 @@ function init(): void {
   scene.background = new THREE.Color('white')
   
   //
-
-  camera = new THREE.PerspectiveCamera( 110, aspect, 0.1, 3000 )
-  // camera.position.setY(3)
-  // camera.position.setZ(5)
   
   renderer = new THREE.WebGLRenderer({
     canvas: container as HTMLCanvasElement
@@ -66,12 +64,13 @@ function init(): void {
   const gridHelper = new THREE.GridHelper(20000, 500)
   scene.add(gridHelper)
   
-  ship = new Ship(camera)
-  
-  scene.add( ship.model )
+  ship = new Ship()
+  scene.add(ship)
   // scene.add( ship.arrowHelperPitch )
   // scene.add( ship.arrowHelperRoll )
   // scene.add( ship.arrowHelperYaw )
+
+  shipCamera = new ShipCamera(110, aspect, 0.1, 3000, ship)
   
   wall = new Wall(ship)
   // ground = new Ground(ship)
@@ -99,7 +98,7 @@ function init(): void {
   obstaclesManager = new ObstaclesManager(scene, ship, 5000)
   obstaclesManager.initialize()
   
-  renderer.render(scene, camera)
+  renderer.render(scene, shipCamera)
 
   animate()
 }
@@ -121,7 +120,7 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'KeyA') isYawingLeft = true
   if (e.code === 'KeyS') isDecelerating = true
   if (e.code === 'Space') isPitchingUp = true
-  if (e.code === 'KeyC') ship.pursuitCamera()
+  if (e.code === 'KeyC') shipCamera.pursuitCamera()
 })
 
 window.addEventListener('keyup', (e) => {
@@ -130,7 +129,7 @@ window.addEventListener('keyup', (e) => {
   if (e.code === 'KeyA') isYawingLeft = false
   if (e.code === 'KeyS') isDecelerating = false
   if (e.code === 'Space') isPitchingUp = false
-  if (e.code === 'KeyC') ship.chaseCamera()
+  if (e.code === 'KeyC') shipCamera.chaseCamera()
 })
 
 window.addEventListener('mousemove', e => {
@@ -172,10 +171,11 @@ function animate(): void {
   
   
   ship.syncShip()
-  ship.syncCamera()
+  shipCamera.syncCamera()
+
   // ground.update()
   
-  pointLight.position.set(ship.model.position.x, ship.model.position.y + 15, ship.model.position.z)
+  pointLight.position.set(ship.position.x, ship.position.y + 15, ship.position.z)
   
   // const isCollision = obstacles.checkCollision(ship)
   // if (isCollision) gameOver()
@@ -183,7 +183,7 @@ function animate(): void {
 
 
   
-  renderer.render( scene, camera )
+  renderer.render( scene, shipCamera )
   requestAnimationFrame( animate )
 }
 

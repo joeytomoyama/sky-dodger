@@ -33,8 +33,8 @@ export default class Obstacle {
     }
 
     checkCollision(ship: Ship): boolean {
-        // if (ship.model.position.y < 0) return true
-        // const boundingBox = new THREE.Box3().setFromObject(ship.model)
+        // if (ship.position.y < 0) return true
+        // const boundingBox = new THREE.Box3().setFromObject(ship)
         // let boundingSphere: THREE.Sphere
         // starGroup.traverse(star => {
         //   boundingSphere = new THREE.Sphere(star.position, 275)
@@ -45,9 +45,9 @@ export default class Obstacle {
         const raycasterX1 = new THREE.Raycaster()
         const raycasterX2 = new THREE.Raycaster()
       
-        raycasterZ.set(ship.model.position, ship.axisRoll)
-        raycasterX1.set(ship.model.position, ship.axisPitch)
-        raycasterX2.set(ship.model.position, ship.axisPitch.clone().negate())
+        raycasterZ.set(ship.position, ship.axisRoll)
+        raycasterX1.set(ship.position, ship.axisPitch)
+        raycasterX2.set(ship.position, ship.axisPitch.clone().negate())
       
         const intersectionsZ = raycasterZ.intersectObjects(this.obsGroup.children)
         const intersectionsX1 = raycasterX1.intersectObjects(this.obsGroup.children)
@@ -64,7 +64,7 @@ export default class Obstacle {
       
         // const vector = new THREE.Vector3()
         // starGroup.traverse(star => {
-        //   raycaster.set(ship.model.position, vector.subVectors(ship.model.position, star.position))
+        //   raycaster.set(ship.position, vector.subVectors(ship.position, star.position))
         //   const intersects = raycaster.intersectObject(star)
         //   // console.log(intersects[0]?.distance)
         //   if (intersects[0]?.distance < 10) return true
