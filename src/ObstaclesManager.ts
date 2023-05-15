@@ -12,6 +12,7 @@ export default class ObstaclesManager {
     private obsMaterial = new THREE.MeshStandardMaterial( { color: 0xFF6347, wireframe: false, opacity: 0.7, transparent: false })
     private obstaclesArray: Array<Obstacles>
     private chunkSize: number
+    obstaclesPerChunk: number = 60
     idx = 1
     
     constructor(scene: THREE.Scene, ship: Ship, chunkSize: number, obstacles?: Obstacles) {
@@ -26,7 +27,8 @@ export default class ObstaclesManager {
         this.obstaclesArray[0] = new Obstacles(new THREE.Vector3(0, this.chunkSize / 2, -this.chunkSize * this.idx++), this.chunkSize, [this.obsGeometry], this.obsMaterial)
         this.obstaclesArray[1] = new Obstacles(new THREE.Vector3(0, this.chunkSize / 2, -this.chunkSize * this.idx++), this.chunkSize, [this.obsGeometry], this.obsMaterial)
         this.obstaclesArray.forEach(obstacles => {
-            this.scene.add(obstacles.create(40))
+            // this.scene.add(obstacles.create(Math.min(this.obstaclesPerChunk *= 1.2, 1000)))
+            this.scene.add(obstacles.create(this.obstaclesPerChunk += 20))
         })
     }
 
@@ -36,7 +38,8 @@ export default class ObstaclesManager {
             // if (zValue) zValue -= this.chunkSize * 2
             console.log(zValue, -this.chunkSize * this.idx++)
             this.obstaclesArray[1] = new Obstacles(new THREE.Vector3(this.ship.position.x, this.ship.position.y, zValue), this.chunkSize, [this.obsGeometry], this.obsMaterial)
-            this.scene.add(this.obstaclesArray[1].create(400))
+            // this.scene.add(this.obstaclesArray[1].create(Math.min(this.obstaclesPerChunk *= 1.2, 1000)))
+            this.scene.add(this.obstaclesArray[1].create(this.obstaclesPerChunk += 20))
         }
 
         let isCollision = false

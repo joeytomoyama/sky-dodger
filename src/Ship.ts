@@ -4,8 +4,8 @@ import * as THREE from 'three'
 
 export default class Ship extends THREE.Object3D {
     public speed
-    private maxSpeed = 15
-    private minSpeed = 3
+    public maxSpeed = 15
+    public minSpeed = 3
     public position = new THREE.Vector3(0, 20, -50)
 
     public axisRoll = new THREE.Vector3(0, 0, -1)
@@ -125,11 +125,11 @@ export default class Ship extends THREE.Object3D {
         this.rotateOnWorldAxis(this.axisYaw, impulse)
     }
 
-    pursuitCamera() {
-        this.invertedCamera = -1
-    }
+    // pursuitCamera() {
+    //     this.invertedCamera = -1
+    // }
 
-    chaseCamera() {
-        this.invertedCamera = 1
-    }
+    // chaseCamera() {
+    //     this.invertedCamera = 1
+    // }
 }

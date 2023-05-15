@@ -61,7 +61,7 @@ function init(): void {
   
   // controls = new OrbitControls(camera, renderer.domElement)
   
-  const gridHelper = new THREE.GridHelper(20000, 500)
+  const gridHelper = new THREE.GridHelper(2000000, 50000)
   scene.add(gridHelper)
   
   ship = new Ship()
@@ -70,7 +70,7 @@ function init(): void {
   // scene.add( ship.arrowHelperRoll )
   // scene.add( ship.arrowHelperYaw )
 
-  shipCamera = new ShipCamera(110, aspect, 0.1, 3000, ship)
+  shipCamera = new ShipCamera(80, aspect, 0.1, 3000, ship)
   
   wall = new Wall(ship)
   // ground = new Ground(ship)
